@@ -1,8 +1,6 @@
 #include <node.h>
 
 using namespace v8;
-#using <System.dll>
-#using <System.Security.dll>
 
 void Method(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();

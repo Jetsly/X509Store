@@ -1,21 +1,23 @@
 #include <node.h>
-#using <System.dll>
-#using <System.Security.dll>
+
+#include <malloc.h>
+#include <windows.h>
+#include <windef.h>
+#include <wincrypt.h>
+#pragma comment(lib,"crypt32.lib")
+#define ENCODING_TYPE (PKCS_7_ASN_ENCODING |X509_ASN_ENCODING)
 
 using namespace v8;
-using namespace System;
-using namespace System::Security::Cryptography;
-using namespace System::Security::Cryptography::X509Certificates;
-using namespace System::IO;
 
 void Method(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
-  //Create new X509 store called teststore from the local certificate store.
-  X509Store ^ store = gcnew X509Store( "teststore",StoreLocation::CurrentUser );
-  store->Open( OpenFlags::ReadWrite );
-  X509Certificate2Collection ^ storecollection2 = dynamic_cast<X509Certificate2Collection^>(store->Certificates);
-  args.GetReturnValue().Set(Number::New(isolate,storecollection3->Count));
+  hStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
+                        0, 
+                        0, 
+                        CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
+                        L"my");
+  args.GetReturnValue().Set(Number::New(isolate,1));
 }
 
 void init(Handle<Object> exports) {
