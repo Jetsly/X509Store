@@ -12,7 +12,7 @@ using namespace v8;
 void Method(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
-  hStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
+  HCERTSTORE hStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
                         0, 
                         0, 
                         CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
