@@ -17,11 +17,17 @@ void Method(const FunctionCallbackInfo<Value>& args) {
                         0, 
                         CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
                         L"my");
-  args.GetReturnValue().Set(Number::New(isolate,1));
+  PCCERT_CONTEXT  pCertContext=NULL;              
+  int i=0;        
+  while(pCertContext=CertEnumCertificatesInStore(hStore,pCertContext)){
+    i++;
+  }          
+  CertCloseStore(hStore,0);          
+  args.GetReturnValue().Set(Number::New(isolate,i));
 }
 
 void init(Handle<Object> exports) {
-  NODE_SET_METHOD(exports, "hello", Method);
+  NODE_SET_METHOD(exports, "count", Method);
 }
 
 NODE_MODULE(addon, init)
