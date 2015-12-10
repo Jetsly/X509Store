@@ -5,11 +5,10 @@
 #include <windef.h>
 #include <wincrypt.h>
 #pragma comment(lib,"crypt32.lib")
-#define ENCODING_TYPE (PKCS_7_ASN_ENCODING |X509_ASN_ENCODING)
 
 using namespace v8;
 
-void Method(const FunctionCallbackInfo<Value>& args) {
+void CountMethod(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   HCERTSTORE hStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
@@ -27,7 +26,7 @@ void Method(const FunctionCallbackInfo<Value>& args) {
 }
 
 void init(Handle<Object> exports) {
-  NODE_SET_METHOD(exports, "count", Method);
+  NODE_SET_METHOD(exports, "count", CountMethod);
 }
 
 NODE_MODULE(addon, init)
