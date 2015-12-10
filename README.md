@@ -1,4 +1,4 @@
-# X509Storea
+# X509Store
 ### 1.安装编译工具
 ```
 npm -g i node-gyp
