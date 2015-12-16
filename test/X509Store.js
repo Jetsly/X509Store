@@ -1,2 +1,4 @@
-var x509Store = require('../build/Release/x509Store');
-console.log(x509Store.count()); // 'world'
+var store=require('./lib/X509')
+store.forEach(function(info,index){
+  console.log(index,info)
+})
