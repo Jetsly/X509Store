@@ -8,67 +8,87 @@
 
 using namespace v8;
 
-//typedef struct _CERT_ INFO {
-//	DWORD dwVersion;        //证书版本  
-//	CRYPT_INTEGER_BLOB SerialNumber;       //序列号  
-//	CRYPT_ALGORITHM_IDENTIFIER SignatureAlgorithm;     //签名算法  
-//	CERT_NAME_BLOB Issuer;   //颁发者  
-//	FILETIME NotBefore;   //有效期(起)  
-//	FILETIME NotAflee;    //有效期(止)  
-//	CERT_NAME_BLOB Subject;   //拥有者  
-//	CERT_PUBLIC_KEY_INFO SubiectPublicKevInfo;  //用户公钥  
-//	CRYPT_BIT_BLOB IssuerUniqueId；    //颁发者唯一标识  
-//		CRYPT_BIT_BLOB SubjectUniqueId;    //拥有者唯一标识  
-//	DWORD cExtension;    //扩展项数  
-//	PCERT_EXTENSION rgExtension;    //扩展  
-//}
-
-void CountMethod(const FunctionCallbackInfo<Value>& args) {
-	Isolate* isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
-
-	HCERTSTORE hStore = CertOpenStore(CERT_STORE_PROV_SYSTEM,
-		0,
-		0,
-		CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
-		L"my");
-	PCCERT_CONTEXT  pCertContext = NULL;
-	int i = 0;
-	while (pCertContext = CertEnumCertificatesInStore(hStore, pCertContext)){
-		i++;
-	}
-	CertCloseStore(hStore, 0);
-	args.GetReturnValue().Set(Number::New(isolate, i));
-}
-
-
-
-
 void ForEachMethod(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = Isolate::GetCurrent();
 	HandleScope scope(isolate);
 	Local<Function> cb = Local<Function>::Cast(args[0]);
 
-	HCERTSTORE hStore = CertOpenStore(CERT_STORE_PROV_SYSTEM,
-		0,
-		0,
-		CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
-		L"my");
+	HCERTSTORE hStore = CertOpenStore(
+		CERT_STORE_PROV_SYSTEM,
+		X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+		NULL,
+		CERT_SYSTEM_STORE_CURRENT_USER,
+		L"My");
 
 	PCCERT_CONTEXT  pCertContext = NULL;
 	int index = 0;
 	while (pCertContext = CertEnumCertificatesInStore(hStore, pCertContext)){
+
 		PCERT_INFO  pCertInfo = pCertContext->pCertInfo;
 		Local<Object> obj = Object::New(isolate);
-		obj->Set(String::NewFromUtf8(isolate, "Subject"),
-			Int32Array::New(ArrayBuffer::New(isolate, pCertInfo->Subject.pbData, strlen((char*)pCertInfo->Subject.pbData)), 0, strlen((char*)pCertInfo->Subject.pbData)));
-		//obj->Set(String::NewFromUtf8(isolate, "Issuer"),String::NewFromUtf8(isolate, DwordToString(pCertInfo->Issuer.cbData)));
-		//obj->Set(String::NewFromUtf8(isolate, "SerialNumber"), String::NewFromUtf8(isolate, DwordToString(pCertInfo->SerialNumber.cbData)));
+		DWORD  dwData;
+		//瀵硅薄鏄惁鍖呭惈绉侀挜
+		obj->Set(String::NewFromUtf8(isolate, "HasPrivateKey"), Boolean::New(isolate, CertGetCertificateContextProperty(pCertContext, 2u, NULL, &dwData)));
+
+		if (dwData = CertGetNameString(pCertContext,
+			CERT_NAME_SIMPLE_DISPLAY_TYPE,
+			CERT_NAME_ISSUER_FLAG,
+			NULL,
+			NULL,
+			0))
+		{
+			LPTSTR szName = (LPTSTR)LocalAlloc(LPTR, dwData * sizeof(TCHAR));
+			if (CertGetNameString(pCertContext,
+				CERT_NAME_SIMPLE_DISPLAY_TYPE,
+				CERT_NAME_ISSUER_FLAG,
+				NULL,
+				szName,
+				dwData)){
+				//璇佷功鐨勮瘉涔﹂鍙戞満鏋勭殑鍚嶇О
+				obj->Set(String::NewFromUtf8(isolate, "Issuer"), String::NewFromUtf8(isolate, szName));
+			}
+		}
+		else{
+			//璇佷功鐨勮瘉涔﹂鍙戞満鏋勭殑鍚嶇О
+			obj->Set(String::NewFromUtf8(isolate, "Issuer"), String::NewFromUtf8(isolate, NULL));
+		}
+
+		if (dwData = CertGetNameString(pCertContext,
+			CERT_NAME_SIMPLE_DISPLAY_TYPE,
+			0,
+			NULL,
+			NULL,
+			0))
+		{
+			LPTSTR szName = (LPTSTR)LocalAlloc(LPTR, dwData * sizeof(TCHAR));
+			if (CertGetNameString(pCertContext,
+				CERT_NAME_SIMPLE_DISPLAY_TYPE,
+				0,
+				NULL,
+				szName,
+				dwData)){
+				//璇佷功鐨勪富棰樺彲鍒嗚鲸鍚嶇О
+				obj->Set(String::NewFromUtf8(isolate, "Subject"), String::NewFromUtf8(isolate, szName));
+			}
+		}
+		else{
+			//璇佷功鐨勪富棰樺彲鍒嗚鲸鍚嶇О
+			obj->Set(String::NewFromUtf8(isolate, "Subject"), String::NewFromUtf8(isolate, NULL));
+		}
+
+		dwData = pCertInfo->SerialNumber.cbData;
+		LPTSTR szName = (LPTSTR)LocalAlloc(LPTR, dwData * sizeof(TCHAR));
+		for (DWORD n = 0; n < dwData; n++)
+		{
+			szName[n]=pCertInfo->SerialNumber.pbData[dwData - (n + 1)];
+		}
+		// 璇佷功鐨勫簭鍒楀彿
+		obj->Set(String::NewFromUtf8(isolate, "SerialNumber"), String::NewFromUtf8(isolate, szName));
 
 		const unsigned argc = 2;
 		Local<Value> argv[argc] = { obj, Number::New(isolate, index) };
 		args.GetReturnValue().Set(obj);
-		//cb->Call(isolate->GetCurrentContext()->Global(), argc, argv);
+		cb->Call(isolate->GetCurrentContext()->Global(), argc, argv);
 		break;
 		index++;
 	}
@@ -77,7 +97,6 @@ void ForEachMethod(const FunctionCallbackInfo<Value>& args) {
 }
 
 void init(Handle<Object> exports) {
-	NODE_SET_METHOD(exports, "count", ForEachMethod);
 	NODE_SET_METHOD(exports, "forEach", ForEachMethod);
 }
 

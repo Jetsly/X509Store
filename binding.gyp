@@ -6,13 +6,13 @@
   #       'src/hello.cc'
   #     ],
   #     'dependencies': [
-        
+
   #     ]
   #   }
   # ]
   'targets': [
     {
-      'target_name': 'X509Store',
+      'target_name': 'X509',
       'sources': [
         'src/X509Store.cc'
       ]
