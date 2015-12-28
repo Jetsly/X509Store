@@ -8,6 +8,12 @@ npm -g i node-gyp
 node-gyp configure build --arch=ia32 --msvs_version=2013 --target=v1.2.0
 nw-gyp configure build --target=0.12.3 --arch=ia32
 ```
+### 3.证书的查看命令
+```
+certlm.msc 本地计算机
+certmgr.msc  当前用户
+```
+
 * [crypto-api](http://stackoverflow.com/questions/4796590/window-c-c-crypto-api-examples-and-tips)
 * [CertOpenStore](https://msdn.microsoft.com/en-us/library/windows/desktop/aa376559%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
 * [CryptoAPI将证书实体添加到证书库](http://www.ituring.com.cn/article/197634)
