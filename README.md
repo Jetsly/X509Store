@@ -5,7 +5,7 @@ npm -g i node-gyp
 ```
 ### 2.编译
 ```
-node-gyp configure build --arch=ia32
+node-gyp configure build --arch=ia32 --msvs_version=2013 --target=v1.2.0
 nw-gyp configure build --target=0.12.3 --arch=ia32
 ```
 * [crypto-api](http://stackoverflow.com/questions/4796590/window-c-c-crypto-api-examples-and-tips)
